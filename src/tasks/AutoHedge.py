@@ -49,13 +49,19 @@ class AutoHedge(DNAOneTimeTask, CommissionsTask, BaseCombatTask):
 
     @property
     def config(self):
-        if self.external_movement == _default_movement:
-            return super().config
-        else:
-            if self._merged_config_cache is None:
-                self._merged_config_cache = super().config.copy()
+        if self.external_movement == _default_movement or not self._external_config:
+            return getattr(self, '_base_config', None)
+
+        if self._merged_config_cache is None:
+            base = getattr(self, '_base_config', {})
+            self._merged_config_cache = base.copy() if base else {}
             self._merged_config_cache.update(self._external_config)
-            return self._merged_config_cache
+        return self._merged_config_cache
+
+    @config.setter
+    def config(self, value):
+        self._base_config = value
+        self._merged_config_cache = None
 
     def config_external_movement(self, approach: Callable, evacuation: Callable, config: dict):
         if callable(approach) and callable(evacuation):
