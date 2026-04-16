@@ -19,7 +19,7 @@ numpy==2.4.4
     #   opencv-python
     #   openvino
     #   shapely
-ok-script==1.0.102
+ok-script==1.0.105
     # via ok-duet-night-abyss (pyproject.toml)
 onnxocr-ppocrv5==0.0.14
     # via ok-duet-night-abyss (pyproject.toml)
