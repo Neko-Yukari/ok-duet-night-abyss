@@ -239,7 +239,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "ok-script" },
-    { name = "onnxocr-ppocrv4" },
+    { name = "onnxocr-ppocrv5" },
     { name = "opencv-python" },
     { name = "openvino" },
     { name = "playwright" },
@@ -255,7 +255,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "ok-script", specifier = ">=1.0.102" },
-    { name = "onnxocr-ppocrv4", specifier = "==0.0.5" },
+    { name = "onnxocr-ppocrv5", specifier = ">=0.0.14" },
     { name = "opencv-python", specifier = ">=4.13.0.92" },
     { name = "openvino", specifier = ">=2026.1.0" },
     { name = "playwright", specifier = ">=1.58.0" },
@@ -287,17 +287,17 @@ wheels = [
 ]
 
 [[package]]
-name = "onnxocr-ppocrv4"
-version = "0.0.5"
+name = "onnxocr-ppocrv5"
+version = "0.0.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pillow" },
     { name = "pyclipper" },
     { name = "shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/07/cb4bb51db2698db9663ac4c2cb2b1dd7430e2ca1a64c9e82b352146ddd6d/onnxocr_ppocrv4-0.0.5.tar.gz", hash = "sha256:003b8c53556ea08680805984f7f6b33f323b842d7fa7e3681510002196dafd31", size = 14411185, upload-time = "2025-06-28T08:39:47.527Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/cb/5eb9b54177a26576ddf190bbf077e21d3b60f840108328591c963272211f/onnxocr_ppocrv5-0.0.14.tar.gz", hash = "sha256:503e59486fa97a5dd941f75801fd1cc56629bf1c38c766385392a09c86e67d89", size = 19160874, upload-time = "2026-03-10T18:15:16.064Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/26/92a01534f182577e87226637df0ee42c8442c9fdfc41b81ebb1caabf54d6/onnxocr_ppocrv4-0.0.5-py3-none-any.whl", hash = "sha256:c7c85e7bed54bba8e846f30a75885e439bd0184a776009a055d95ded74a59dac", size = 14412201, upload-time = "2025-06-28T08:39:34.382Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/29/672c338769a4265febbc1ac91618dae7bc26229d2af1f8179038f8282166/onnxocr_ppocrv5-0.0.14-py3-none-any.whl", hash = "sha256:0eeb3affd03f05381cf4315eb2172116e6c309d3a4a231c12d8d6fae1b830caf", size = 19173226, upload-time = "2026-03-10T18:15:00.021Z" },
 ]
 
 [[package]]

@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ok-script>=1.0.102",
-    "onnxocr-ppocrv4==0.0.5",
+    "onnxocr-ppocrv5>=0.0.14",
     "opencv-python>=4.13.0.92",
     "openvino>=2026.1.0",
     "playwright>=1.58.0",
