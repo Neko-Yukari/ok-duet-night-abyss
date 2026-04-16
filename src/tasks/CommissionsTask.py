@@ -77,8 +77,8 @@ class CommissionsTask(BaseDNATask):
                                                                name="letter_reward_btn", hcenter=True))
 
     def find_drop_rate_btn(self, threshold=0):
-        return self.find_start_btn(
-            threshold=threshold, box=self.box_of_screen_scaled(2560, 1440, 1060, 915, 1420, 980, name="drop_rate_btn",
+        return self.find_space_btn(
+            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 1978, 1380, width_original=590 ,height_original=71, name="drop_rate_btn",
                                                                hcenter=True))
 
     def find_esc_menu(self, threshold=0):
@@ -104,19 +104,42 @@ class CommissionsTask(BaseDNATask):
         action_timeout = self.action_timeout if timeout == 0 else timeout
         box = self.box_of_screen_scaled(2560, 1440, 69, 969, 2498, 1331, name="reward_drag_area", hcenter=True)
         start_time = time.time()
-        while time.time() - start_time < action_timeout:
+        deadline = start_time + action_timeout
+        retry_press_count = 0
+        retry_seen = False
+        retry_stall_deadline = None
+
+        while time.time() < deadline:
             if self.find_retry_btn():
-                self.send_key("r", after_sleep=0.2)
+                retry_seen = True
+                if retry_press_count < 3:
+                    retry_press_count += 1
+                    if retry_stall_deadline is None:
+                        retry_stall_deadline = time.time() + 15
+                        deadline = max(deadline, retry_stall_deadline)
+                    self.send_key("r", after_sleep=0.2)
             elif (btn := self.find_bottom_start_btn() or self.find_big_bottom_start_btn()):
                 self.click_btn_random(btn, safe_move_box=box, after_sleep=0.2)
+
             if self.wait_until(condition=lambda: self.find_drop_rate_btn() or self.find_letter_interface(), time_out=1):
                 break
-            if self.find_retry_btn() and self.calculate_color_percentage(retry_btn_color,
-                                                                         self.get_box_by_name("retry_icon")) < 0.05:
+
+            # 云游戏/浏览器环境下颜色采样不稳定：不再依赖按钮颜色判断“不可继续”。
+            # 仅当检测到 retry_btn 但未进入后续界面时，最多按 3 次 R，并在首按后等待 15 秒仍无变化才判定为“任务无法继续”。
+            if (
+                retry_seen
+                and retry_press_count >= 3
+                and retry_stall_deadline is not None
+                and time.time() >= retry_stall_deadline
+            ):
                 self.soundBeep()
                 self.log_info_notify("任务无法继续")
                 raise TaskDisabledException
         else:
+            if retry_seen:
+                self.soundBeep()
+                self.log_info_notify("任务无法继续")
+                raise TaskDisabledException
             raise Exception("等待开始任务超时")
 
     def quit_mission(self, timeout=0):
@@ -491,10 +514,12 @@ class CommissionsTask(BaseDNATask):
             return True
 
     def reset_and_transport(self):
+        # 1) 打开局内菜单(ESC 菜单)
         self.open_in_mission_menu()
         self.wait_until(
             condition=lambda: not self.find_esc_menu(),
-            post_action=self.click_relative_random(0.688, 0.875, 0.770, 0.956),
+            # 2) 点击"设置"入口(局内菜单右下区域), 点击后应关闭 ESC 菜单
+            post_action=lambda: self.click_relative_random(0.688, 0.875, 0.770, 0.956),
             time_out=10,
         )
         setting_box = self.box_of_screen_scaled(2560, 1440, 738, 4, 1123, 79, name="other_section", hcenter=True)
@@ -502,6 +527,7 @@ class CommissionsTask(BaseDNATask):
                                         raise_if_not_found=True)
         self.wait_until(
             condition=lambda: self.calculate_color_percentage(setting_menu_selected_color, setting_other) > 0.24,
+            # 3) 点击“其他设置”页签(setting_other), 直到该页签呈选中状态(通过颜色占比判断)
             post_action=lambda: self.click_box_random(setting_other),
             time_out=10,
         )
@@ -510,13 +536,15 @@ class CommissionsTask(BaseDNATask):
         safe_box = self.box_of_screen_scaled(2560, 1440, 125, 207, 1811, 1234, name="safe_box", hcenter=True)
         self.wait_until(
             condition=lambda: self.find_start_btn(box=confirm_box),
-            post_action=lambda: self.click_relative_random(0.5078, 0.4028, 0.6836, 0.4306, after_sleep=0.5, use_safe_move=True, safe_move_box=safe_box),
+            # 4) 点击“重置角色/复位并传送”按钮(弹框确认按钮出现后点击). safe_box 用于前台/非前台时的鼠标安全移动
+            post_action=lambda: self.click_relative_random(0.51, 0.5866667, 0.66875, 0.6188889, after_sleep=0.5, use_safe_move=True, safe_move_box=safe_box),
             time_out=10,
         )
         self.sleep(0.5)
         safe_box = self.box_of_screen_scaled(2560, 1440, 1298, 772, 1735, 846, name="safe_box", hcenter=True)
         self.wait_until(
             condition=lambda: not self.find_start_btn(box=confirm_box),
+            # 5) 点击确认弹框的“确认/确定”(确认按钮消失前后切换, 用于保证弹框完成与关闭)
             post_action=lambda: self.click_relative_random(0.531, 0.547, 0.671, 0.578, after_sleep=0.5, use_safe_move=True, safe_move_box=safe_box),
             time_out=10,
         )
