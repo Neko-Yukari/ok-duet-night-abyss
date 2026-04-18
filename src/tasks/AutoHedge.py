@@ -47,6 +47,7 @@ class AutoHedge(DNAOneTimeTask, CommissionsTask, BaseCombatTask):
         self.roulette_task = None
         self.maze_task = None
 
+
     @property
     def config(self):
         if self.external_movement == _default_movement or not self._external_config:
@@ -189,7 +190,7 @@ class AutoHedge(DNAOneTimeTask, CommissionsTask, BaseCombatTask):
         if percentage == 100:
             self.runtime_state["in_progress"] = False
             self.mission_complete = True
-        elif percentage > 0:
+        elif percentage >= 0:
             self.runtime_state["in_progress"] = True
         if not self.runtime_state["in_progress"] and not self.mission_complete:
             _track_point = self.find_top_right_track_pos()
@@ -205,18 +206,16 @@ class AutoHedge(DNAOneTimeTask, CommissionsTask, BaseCombatTask):
         if self.ocr_future and self.ocr_future.done():
             texts = self.ocr_future.result()
             self.ocr_future = None
-            if texts and "%" in texts[0].name:
-                name = texts[0].name.replace("%", "")
-                if name.isdigit():
-                    pct = int(name)
+            if texts and getattr(texts[0], "name", None):
+                if (m := re.search(r"(\d{1,3})\s*[％%]", texts[0].name)):
+                    pct = int(m.group(1))
                     if pct > self.last_ocr_result and pct <= 100:
                         self.last_ocr_result = pct
-                        # self.info_set("进度", f"{pct}%")
             return self.last_ocr_result
         if self.ocr_future is None:
-            box = self.box_of_screen_scaled(2560, 1440, 115, 490, 217, 550, name="process_info", hcenter=True)
+            box = self.box_of_screen_scaled(3840, 2160, 12, 494, width_original=625, height_original=508, name="process_info", hcenter=True)
             frame = self.frame.copy()
-            self.ocr_future = self.thread_pool_executor.submit(self.ocr, frame=frame, box=box, match=re.compile(r"\d+%"))
+            self.ocr_future = self.thread_pool_executor.submit(self.ocr, frame=frame, box=box, match=re.compile(r"\d{1,3}\s*[％%]"))
         return self.last_ocr_result
 
     def find_top_right_track_pos(self):

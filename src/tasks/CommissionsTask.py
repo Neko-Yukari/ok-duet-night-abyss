@@ -105,19 +105,37 @@ class CommissionsTask(BaseDNATask):
         box = self.box_of_screen_scaled(2560, 1440, 69, 969, 2498, 1331, name="reward_drag_area", hcenter=True)
         start_time = time.time()
         deadline = start_time + action_timeout
+        max_retry_press_count = 5
+        retry_click_box = self.box_of_screen_scaled(
+            3840,
+            2160,
+            2555,
+            1880,
+            2555 + 430,
+            1880 + 47,
+            name="retry_click_area",
+            hcenter=True,
+        )
         retry_press_count = 0
         retry_seen = False
         retry_stall_deadline = None
 
         while time.time() < deadline:
             if self.find_retry_btn():
+                self.sleep(1)
                 retry_seen = True
-                if retry_press_count < 3:
+                if retry_press_count < max_retry_press_count:
                     retry_press_count += 1
                     if retry_stall_deadline is None:
                         retry_stall_deadline = time.time() + 15
                         deadline = max(deadline, retry_stall_deadline)
-                    self.send_key("r", after_sleep=0.2)
+                    self.click_box_random(
+                        retry_click_box,
+                        down_time=0.02,
+                        after_sleep=0.5,
+                        use_safe_move=True,
+                        safe_move_box=box,
+                    )
             elif (btn := self.find_bottom_start_btn() or self.find_big_bottom_start_btn()):
                 self.click_btn_random(btn, safe_move_box=box, after_sleep=0.2)
 
@@ -125,10 +143,10 @@ class CommissionsTask(BaseDNATask):
                 break
 
             # 云游戏/浏览器环境下颜色采样不稳定：不再依赖按钮颜色判断“不可继续”。
-            # 仅当检测到 retry_btn 但未进入后续界面时，最多按 3 次 R，并在首按后等待 15 秒仍无变化才判定为“任务无法继续”。
+            # 仅当检测到 retry_btn 但未进入后续界面时，最多按 max_retry_press_count 次 R，并在首按后等待 15 秒仍无变化才判定为“任务无法继续”。
             if (
                 retry_seen
-                and retry_press_count >= 3
+                and retry_press_count >= max_retry_press_count
                 and retry_stall_deadline is not None
                 and time.time() >= retry_stall_deadline
             ):
@@ -525,10 +543,12 @@ class CommissionsTask(BaseDNATask):
         setting_box = self.box_of_screen_scaled(2560, 1440, 738, 4, 1123, 79, name="other_section", hcenter=True)
         setting_other = self.wait_until(lambda: self.find_one("setting_other", box=setting_box), time_out=10,
                                         raise_if_not_found=True)
+        # 云游戏局内打开菜单必然卡一下
+        self.sleep(0.5)
         self.wait_until(
             condition=lambda: self.calculate_color_percentage(setting_menu_selected_color, setting_other) > 0.24,
-            # 3) 点击“其他设置”页签(setting_other), 直到该页签呈选中状态(通过颜色占比判断)
-            post_action=lambda: self.click_box_random(setting_other),
+            # 3) 点击“其他设置”页签(setting_other), 直到该页签呈选中状态(通过颜色占比判断)，点击不要那么频繁
+            post_action=lambda: self.click_box_random(setting_other, after_sleep=0.5),
             time_out=10,
         )
         self.sleep(0.5)
