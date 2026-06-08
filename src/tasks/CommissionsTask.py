@@ -97,7 +97,7 @@ class CommissionsTask(BaseDNATask):
 
     def find_letter_btn(self, threshold=0):
         return self.find_space_btn(
-            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 2796, 1347, width_original=568 ,height_original=83, name="letter_btn",
+            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 2763, 1324, width_original=673 ,height_original=130, name="letter_btn",
                                                                hcenter=True))
 
     def find_letter_reward_btn(self, threshold=0):
@@ -108,7 +108,7 @@ class CommissionsTask(BaseDNATask):
 
     def find_drop_rate_btn(self, threshold=0):
         return self.find_space_btn(
-            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 1978, 1380, width_original=590 ,height_original=71, name="drop_rate_btn",
+            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 1438, 1353, width_original=1077 ,height_original=143, name="drop_rate_btn",
                                                                hcenter=True))
 
     def find_esc_menu(self, threshold=0):
