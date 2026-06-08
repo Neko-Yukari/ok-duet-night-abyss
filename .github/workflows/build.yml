@@ -72,7 +72,6 @@ jobs:
           show_author: true #在更新日志中加入作者
 
       - name: Build with PyAppify Action
-        if: steps.release-version.outputs.is_release == 'true'
         id: build-app
         uses: ok-oldking/pyappify-action@master #使用pyappify打包exe
         env:
