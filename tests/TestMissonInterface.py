@@ -47,7 +47,24 @@ class TestMissonInterface(TaskTestCase):
         feature = self.task.find_drop_item()
         self.assertIsNotNone(feature)
         self.logger.info(feature)
+        
+    def test_feature7(self):
+        self.set_image('tests/images/iface_drop2.png')
+        feature = self.task.find_drop_item()
+        self.assertIsNotNone(feature)
+        self.logger.info(feature)
 
+    def test_feature8(self):
+        self.set_image('tests/images/iface_drop2.png')
+        feature = self.task.find_drop_rate_btn()
+        self.assertIsNotNone(feature)
+        self.logger.info(feature)
+
+    def test_feature9(self):
+        self.set_image('tests/images/iface_drop.png')
+        feature = self.task.find_drop_rate_btn()
+        self.assertIsNotNone(feature)
+        self.logger.info(feature)
 
 
 if __name__ == '__main__':
