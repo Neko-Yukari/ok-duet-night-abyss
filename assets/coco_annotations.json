@@ -204,6 +204,11 @@
             "id": 38,
             "name": "esc_icon",
             "supercategory": ""
+        },
+        {
+            "id": 39,
+            "name": "q_mp",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -347,6 +352,12 @@
             "file_name": "images/0.png",
             "width": 3840,
             "height": 2160
+        },
+        {
+            "id": 16,
+            "file_name": "images/3.png",
+            "width": 1600,
+            "height": 900
         }
     ],
     "annotations": [
@@ -898,6 +909,19 @@
                 82
             ],
             "area": 10004,
+            "iscrowd": 0
+        },
+        {
+            "id": 38,
+            "image_id": 16,
+            "category_id": 39,
+            "bbox": [
+                1471,
+                787,
+                34,
+                15
+            ],
+            "area": 510,
             "iscrowd": 0
         }
     ]

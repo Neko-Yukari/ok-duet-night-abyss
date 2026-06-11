@@ -29,6 +29,7 @@ class LabelEnum(str, Enum):
     not_use_letter = 'not_use_letter'
     pick_up_e = 'pick_up_e'
     pick_up_f = 'pick_up_f'
+    q_mp = 'q_mp'
     quit_big_icon = 'quit_big_icon'
     quit_icon = 'quit_icon'
     retry_icon = 'retry_icon'

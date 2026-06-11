@@ -560,3 +560,6 @@ msgstr "遊戲內射擊時水平靈敏度"
 
 msgid "Aim Y-axis sensitivity"
 msgstr "遊戲內射擊時垂直靈敏度"
+
+msgid "保持开关类终结技开启"
+msgstr "保持開關類終結技開啟"

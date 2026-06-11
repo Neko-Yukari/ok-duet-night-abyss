@@ -440,6 +440,11 @@ class CommissionsTask(BaseDNATask):
                     self.get_current_char().send_combat_key_with_ctrl()
                 elif skill == "终结技":
                     self.get_current_char().send_ultimate_key()
+                elif skill == "保持开关类终结技开启":
+                    # q_mp 模板匹配：匹配到说明显示为 0（消耗=0，开关已开启），跳过
+                    if self.find_one('q_mp', threshold=0.95):
+                        return
+                    self.get_current_char().send_ultimate_key()
                 elif skill == "魔灵支援":
                     self.get_current_char().send_geniemon_key()
                 elif skill == "普攻":

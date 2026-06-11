@@ -560,3 +560,6 @@ msgstr ""
 
 msgid "Aim Y-axis sensitivity"
 msgstr ""
+
+msgid "保持开关类终结技开启"
+msgstr "トグル型アルティメットを維持"

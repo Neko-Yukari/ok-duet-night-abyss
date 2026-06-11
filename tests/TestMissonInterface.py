@@ -67,5 +67,18 @@ class TestMissonInterface(TaskTestCase):
         self.logger.info(feature)
 
 
+    def test_feature10(self):
+        """ON 状态（显示 0）：模板匹配应找到 q_mp（置信度 1.0 > 0.95）"""
+        self.set_image('tests/images/q_mp_test.png')
+        result = self.task.find_one('q_mp', threshold=0.95)
+        self.assertIsNotNone(result, "Should detect q_mp when toggle is ON (showing 0)")
+        self.logger.info(f'ON state: confidence={result.confidence}')
+
+    def test_feature11(self):
+        """OFF 状态（显示 6）：模板匹配不应找到 q_mp（置信度 0.846 < 0.95）"""
+        self.set_image('tests/images/q_mp_off.png')
+        result = self.task.find_one('q_mp', threshold=0.95)
+        self.assertIsNone(result, "Should NOT detect q_mp when toggle is OFF (showing non-zero)")
+
 if __name__ == '__main__':
     unittest.main()
