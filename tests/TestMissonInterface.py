@@ -94,5 +94,12 @@ class TestMissonInterface(TaskTestCase):
             self.assertGreater(off_result.confidence, on_result.confidence,
                                f"OFF conf ({off_result.confidence:.3f}) should be > ON conf ({on_result.confidence:.3f})")
 
+    def test_find_letter_btn(self):
+        """密函确认按钮：find_letter_btn 应能匹配到"""
+        self.set_image('tests/images/find_letter_btn.png')
+        result = self.task.find_letter_btn()
+        self.assertIsNotNone(result, "letter_btn should be found")
+        self.logger.info(f'find_letter_btn: {result}')
+
 if __name__ == '__main__':
     unittest.main()

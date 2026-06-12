@@ -97,7 +97,7 @@ class CommissionsTask(BaseDNATask):
 
     def find_letter_btn(self, threshold=0):
         return self.find_space_btn(
-            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 2763, 1324, width_original=673 ,height_original=130, name="letter_btn",
+            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 1920, 1338, width_original=1457 ,height_original=130, name="letter_btn",
                                                                hcenter=True))
 
     def find_letter_reward_btn(self, threshold=0):
