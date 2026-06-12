@@ -560,3 +560,6 @@ msgstr "遊戲內射擊時水平靈敏度"
 
 msgid "Aim Y-axis sensitivity"
 msgstr "遊戲內射擊時垂直靈敏度"
+
+msgid "自动苏乙终结技"
+msgstr "自動蘇乙終結技"

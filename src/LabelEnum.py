@@ -38,5 +38,7 @@ class LabelEnum(str, Enum):
     setting_other = 'setting_other'
     space_icon = 'space_icon'
     start_icon = 'start_icon'
+    suyi_q_off = 'suyi_q_off'
+    suyi_q_on = 'suyi_q_on'
     track_point = 'track_point'
     ultimate_key_icon = 'ultimate_key_icon'

@@ -560,3 +560,6 @@ msgstr ""
 
 msgid "Aim Y-axis sensitivity"
 msgstr ""
+
+msgid "自动苏乙终结技"
+msgstr "自動スイアルティメット"

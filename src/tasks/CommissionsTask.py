@@ -97,7 +97,7 @@ class CommissionsTask(BaseDNATask):
 
     def find_letter_btn(self, threshold=0):
         return self.find_space_btn(
-            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 2763, 1324, width_original=673 ,height_original=130, name="letter_btn",
+            threshold=threshold, box=self.box_of_screen_scaled(3840, 2160, 1920, 1338, width_original=1457 ,height_original=130, name="letter_btn",
                                                                hcenter=True))
 
     def find_letter_reward_btn(self, threshold=0):
@@ -440,6 +440,15 @@ class CommissionsTask(BaseDNATask):
                     self.get_current_char().send_combat_key_with_ctrl()
                 elif skill == "终结技":
                     self.get_current_char().send_ultimate_key()
+                elif skill == "自动苏乙终结技":
+                    on_result = self.find_one('suyi_q_on')
+                    off_result = self.find_one('suyi_q_off')
+                    on_conf = on_result.confidence if on_result else 0
+                    off_conf = off_result.confidence if off_result else 0
+                    if off_conf > on_conf:
+                        self.get_current_char().send_ultimate_key()
+                    else:
+                        self.get_current_char().click()
                 elif skill == "魔灵支援":
                     self.get_current_char().send_geniemon_key()
                 elif skill == "普攻":
