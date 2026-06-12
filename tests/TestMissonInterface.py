@@ -1,4 +1,5 @@
 # Test case
+import re
 import unittest
 
 from src.config import config
@@ -68,17 +69,30 @@ class TestMissonInterface(TaskTestCase):
 
 
     def test_feature10(self):
-        """ON 状态（显示 0）：模板匹配应找到 q_mp（置信度 1.0 > 0.95）"""
-        self.set_image('tests/images/q_mp_test.png')
-        result = self.task.find_one('q_mp', threshold=0.95)
-        self.assertIsNotNone(result, "Should detect q_mp when toggle is ON (showing 0)")
-        self.logger.info(f'ON state: confidence={result.confidence}')
+        """ON 状态（suyi_q_on.png）：应判定为开启 → 不触发 Q
+        判定规则：两个都匹配到时比置信度，仅 ON 匹配到也视为开启"""
+        self.set_image('tests/images/suyi_q_on.png')
+        on_result = self.task.find_one('suyi_q_on')
+        off_result = self.task.find_one('suyi_q_off')
+        self.logger.info(f'ON image: on={on_result}, off={off_result}')
+        self.assertIsNotNone(on_result, "ON template should match on ON image")
+        if off_result is not None:
+            # 两个都匹配到了 → ON 置信度必须更高
+            self.assertGreater(on_result.confidence, off_result.confidence,
+                               f"ON conf ({on_result.confidence:.3f}) should be > OFF conf ({off_result.confidence:.3f})")
 
     def test_feature11(self):
-        """OFF 状态（显示 6）：模板匹配不应找到 q_mp（置信度 0.846 < 0.95）"""
-        self.set_image('tests/images/q_mp_off.png')
-        result = self.task.find_one('q_mp', threshold=0.95)
-        self.assertIsNone(result, "Should NOT detect q_mp when toggle is OFF (showing non-zero)")
+        """OFF 状态（suyi_q_off.png）：应判定为关闭 → 触发 Q
+        判定规则：两个都匹配到时比置信度，仅 OFF 匹配到也视为关闭"""
+        self.set_image('tests/images/suyi_q_off.png')
+        on_result = self.task.find_one('suyi_q_on')
+        off_result = self.task.find_one('suyi_q_off')
+        self.logger.info(f'OFF image: on={on_result}, off={off_result}')
+        self.assertIsNotNone(off_result, "OFF template should match on OFF image")
+        if on_result is not None:
+            # 两个都匹配到了 → OFF 置信度必须更高
+            self.assertGreater(off_result.confidence, on_result.confidence,
+                               f"OFF conf ({off_result.confidence:.3f}) should be > ON conf ({on_result.confidence:.3f})")
 
 if __name__ == '__main__':
     unittest.main()

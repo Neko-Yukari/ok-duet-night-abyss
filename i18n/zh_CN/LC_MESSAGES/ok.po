@@ -558,5 +558,5 @@ msgstr "游戏内射击时水平灵敏度"
 msgid "Aim Y-axis sensitivity"
 msgstr "游戏内射击时垂直灵敏度"
 
-msgid "保持开关类终结技开启"
+msgid "自动苏乙终结技"
 msgstr ""

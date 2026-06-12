@@ -561,5 +561,5 @@ msgstr ""
 msgid "Aim Y-axis sensitivity"
 msgstr ""
 
-msgid "保持开关类终结技开启"
-msgstr "Keep Toggle-type Ultimate Active"
+msgid "自动苏乙终结技"
+msgstr "Auto Suyi Ultimate"

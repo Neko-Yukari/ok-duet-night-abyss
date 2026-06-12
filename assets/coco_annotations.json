@@ -206,8 +206,13 @@
             "supercategory": ""
         },
         {
-            "id": 39,
-            "name": "q_mp",
+            "id": 40,
+            "name": "suyi_q_off",
+            "supercategory": ""
+        },
+        {
+            "id": 41,
+            "name": "suyi_q_on",
             "supercategory": ""
         }
     ],
@@ -354,8 +359,14 @@
             "height": 2160
         },
         {
-            "id": 16,
+            "id": 17,
             "file_name": "images/3.png",
+            "width": 1600,
+            "height": 900
+        },
+        {
+            "id": 18,
+            "file_name": "images/4.png",
             "width": 1600,
             "height": 900
         }
@@ -912,16 +923,29 @@
             "iscrowd": 0
         },
         {
-            "id": 38,
-            "image_id": 16,
-            "category_id": 39,
+            "id": 39,
+            "image_id": 17,
+            "category_id": 40,
             "bbox": [
-                1471,
-                787,
-                34,
-                15
+                1426,
+                791,
+                38,
+                31
             ],
-            "area": 510,
+            "area": 1178,
+            "iscrowd": 0
+        },
+        {
+            "id": 40,
+            "image_id": 18,
+            "category_id": 41,
+            "bbox": [
+                1425,
+                791,
+                38,
+                32
+            ],
+            "area": 1216,
             "iscrowd": 0
         }
     ]
