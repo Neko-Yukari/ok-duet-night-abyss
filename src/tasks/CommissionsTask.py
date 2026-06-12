@@ -441,17 +441,14 @@ class CommissionsTask(BaseDNATask):
                 elif skill == "终结技":
                     self.get_current_char().send_ultimate_key()
                 elif skill == "自动苏乙终结技":
-                    # 模板对比：比较 ON/OFF 模板置信度，OFF 明显更高才触发 Q
                     on_result = self.find_one('suyi_q_on')
                     off_result = self.find_one('suyi_q_off')
-                    if on_result is not None and off_result is not None:
-                        # 两个都匹配到了，比置信度
-                        if off_result.confidence > on_result.confidence:
-                            self.get_current_char().send_ultimate_key()
-                    elif on_result is None and off_result is not None:
-                        # 只有 OFF 匹配到，确认关闭状态
+                    on_conf = on_result.confidence if on_result else 0
+                    off_conf = off_result.confidence if off_result else 0
+                    if off_conf > on_conf:
                         self.get_current_char().send_ultimate_key()
-                    # 其他情况（只有 ON / 都没有）→ 不触发
+                    else:
+                        self.get_current_char().click()
                 elif skill == "魔灵支援":
                     self.get_current_char().send_geniemon_key()
                 elif skill == "普攻":

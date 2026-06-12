@@ -1,5 +1,4 @@
 # Test case
-import re
 import unittest
 
 from src.config import config
