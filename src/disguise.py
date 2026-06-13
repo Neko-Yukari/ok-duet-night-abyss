@@ -180,6 +180,7 @@ def find_own_windows() -> list[int]:
 
 
 _original_main_window_title: str | None = None
+_original_application_name: str | None = None
 
 
 def set_main_window_title(title: str) -> bool:
@@ -189,12 +190,17 @@ def set_main_window_title(title: str) -> bool:
     qfluentwidgets' FluentWindow uses a custom title bar that only updates
     when Qt's own setWindowTitle() is called. Win32 SetWindowTextW changes the
     taskbar text but not the in-window title bar.
+
+    In addition to the window title, QApplication's application name and
+    display name are updated so Windows does not render the title as
+    ``<window title> - <app name>`` in the taskbar or Alt-Tab.
     """
-    global _original_main_window_title
+    global _original_main_window_title, _original_application_name
     if not title:
         return False
     try:
         from ok import og
+        from PySide6.QtWidgets import QApplication
         main_window = getattr(og, 'main_window', None)
         if main_window is None:
             logger.debug("No Qt main window available yet")
@@ -202,6 +208,14 @@ def set_main_window_title(title: str) -> bool:
         if _original_main_window_title is None:
             _original_main_window_title = main_window.windowTitle()
         main_window.setWindowTitle(title)
+
+        app = QApplication.instance()
+        if app is not None:
+            if _original_application_name is None:
+                _original_application_name = app.applicationDisplayName()
+            app.setApplicationName(title)
+            app.setApplicationDisplayName(title)
+
         logger.info(f"Set Qt main window title to: {title}")
         return True
     except Exception as e:
@@ -211,16 +225,22 @@ def set_main_window_title(title: str) -> bool:
 
 def restore_main_window_title() -> bool:
     """Restore the Qt main window title to its original value."""
-    global _original_main_window_title
-    if _original_main_window_title is None:
+    global _original_main_window_title, _original_application_name
+    if _original_main_window_title is None and _original_application_name is None:
         return False
     try:
         from ok import og
+        from PySide6.QtWidgets import QApplication
         main_window = getattr(og, 'main_window', None)
-        if main_window is None:
-            return False
-        main_window.setWindowTitle(_original_main_window_title)
-        logger.info(f"Restored Qt main window title to: {_original_main_window_title}")
+        if main_window is not None and _original_main_window_title is not None:
+            main_window.setWindowTitle(_original_main_window_title)
+            logger.info(f"Restored Qt main window title to: {_original_main_window_title}")
+
+        app = QApplication.instance()
+        if app is not None and _original_application_name is not None:
+            app.setApplicationName(_original_application_name)
+            app.setApplicationDisplayName(_original_application_name)
+            logger.info(f"Restored application name to: {_original_application_name}")
         return True
     except Exception as e:
         logger.warning(f"Failed to restore Qt main window title: {e}")
