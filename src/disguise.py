@@ -243,22 +243,25 @@ def set_own_window_title(title: str) -> bool:
 
 def rename_own_gui_window(old_title: str, new_title: str) -> bool:
     """
-    Rename a running GUI window from ``old_title`` to ``new_title``.
+    Rename a running GUI window belonging to this process from ``old_title`` to
+    ``new_title``.
 
     This is a fallback for when the window has already been created with the
-    original title (e.g. when applying disguise after startup).
+    original title (e.g. when applying disguise after startup). Only windows
+    owned by the current process are touched to avoid renaming other
+    applications.
     """
     if not old_title or not new_title:
         return False
 
-    hwnds = find_windows_by_title(old_title)
+    hwnds = [hwnd for hwnd in find_own_windows() if old_title in get_window_text(hwnd)]
     if not hwnds:
-        logger.debug(f"No window with title containing '{old_title}' found")
+        logger.debug(f"No own window with title containing '{old_title}' found")
         return False
 
     for hwnd in hwnds:
         if set_window_text(hwnd, new_title):
-            logger.info(f"Renamed GUI window {hwnd} title to: {new_title}")
+            logger.info(f"Renamed own GUI window {hwnd} title to: {new_title}")
     return True
 
 
@@ -298,20 +301,26 @@ def apply_disguise(cfg: DisguiseConfig) -> DisguiseConfig:
     return cfg
 
 
-def apply_disguise_from_config(cfg: dict) -> DisguiseConfig:
+def apply_disguise_from_config(cfg: dict, debug: bool = False) -> DisguiseConfig:
     """
     Apply disguise settings directly from a raw configuration mapping.
 
     This is used both at startup and when the user changes a disguise option
     in the GUI so that the change takes effect immediately.
+
+    When ``debug`` is True the console window is never hidden so that logs
+    remain visible during development.
     """
     enabled = cfg.get("启用伪装", False)
     gui_title = cfg.get("GUI窗口标题", "") if enabled else ""
     console_title = cfg.get("控制台窗口标题", "") if enabled else ""
+    hide_console = cfg.get("隐藏控制台窗口", True) if enabled else False
+    if debug:
+        hide_console = False
 
     result = apply_disguise(DisguiseConfig(
         enabled=enabled,
-        hide_console=cfg.get("隐藏控制台窗口", True) if enabled else False,
+        hide_console=hide_console,
         console_title=console_title,
         gui_title=gui_title,
         rename_existing_window=False,

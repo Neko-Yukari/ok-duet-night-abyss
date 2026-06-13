@@ -22,11 +22,13 @@ enumerators. Because the buffer they point to is in the process's own address
 space, we can allocate a new wide-character string and repoint the
 UNICODE_STRING there.
 
-Offsets used (x64 Windows 10/11, 22H2+):
+Offsets used are selected at runtime based on the interpreter's pointer size
+(x64 vs x86, including WoW64). For x64 Windows 10/11:
 - TEB.ProcessEnvironmentBlock        : 0x60
 - PEB.ProcessParameters              : 0x20
 - RTL_USER_PROCESS_PARAMETERS.ImagePathName : 0x60
 - RTL_USER_PROCESS_PARAMETERS.CommandLine   : 0x70
+For x86/WoW64 the offsets match the 32-bit PEB layout.
 """
 
 from __future__ import annotations
@@ -44,17 +46,14 @@ _kernel32 = ctypes.windll.kernel32
 _ProcessBasicInformation = 0
 
 
-class _UNICODE_STRING(ctypes.Structure):
-    _fields_ = [
-        ("Length", ctypes.c_ushort),
-        ("MaximumLength", ctypes.c_ushort),
-        ("Padding", ctypes.c_uint32),  # structure alignment on x64
-        ("Buffer", ctypes.c_void_p),
-    ]
+# Platform-dependent PEB/RTL_USER_PROCESS_PARAMETERS offsets.
+# We determine the layout from the pointer size of the running interpreter.
+# - 64-bit Python on 64-bit Windows uses the native x64 PEB.
+# - 32-bit Python (including WoW64) uses the 32-bit PEB, whose offsets match x86.
+_POINTER_SIZE = ctypes.sizeof(ctypes.c_void_p)
 
-
-class _PROCESS_BASIC_INFORMATION(ctypes.Structure):
-    _fields_ = [
+if _POINTER_SIZE == 8:
+    _PROCESS_BASIC_INFORMATION_FIELDS = [
         ("ExitStatus", ctypes.c_ulong),
         ("PebBaseAddress", ctypes.c_void_p),
         ("AffinityMask", ctypes.c_ulonglong),
@@ -62,6 +61,33 @@ class _PROCESS_BASIC_INFORMATION(ctypes.Structure):
         ("UniqueProcessId", ctypes.c_void_p),
         ("InheritedFromUniqueProcessId", ctypes.c_void_p),
     ]
+    _PEB_PROCESS_PARAMETERS_OFFSET = 0x20
+    _PROCESS_PARAMS_IMAGE_PATH_OFFSET = 0x60
+    _PROCESS_PARAMS_COMMAND_LINE_OFFSET = 0x70
+else:
+    _PROCESS_BASIC_INFORMATION_FIELDS = [
+        ("ExitStatus", ctypes.c_ulong),
+        ("PebBaseAddress", ctypes.c_void_p),
+        ("AffinityMask", ctypes.c_ulong),
+        ("BasePriority", ctypes.c_long),
+        ("UniqueProcessId", ctypes.c_void_p),
+        ("InheritedFromUniqueProcessId", ctypes.c_void_p),
+    ]
+    _PEB_PROCESS_PARAMETERS_OFFSET = 0x10
+    _PROCESS_PARAMS_IMAGE_PATH_OFFSET = 0x38
+    _PROCESS_PARAMS_COMMAND_LINE_OFFSET = 0x40
+
+
+class _UNICODE_STRING(ctypes.Structure):
+    _fields_ = [
+        ("Length", ctypes.c_ushort),
+        ("MaximumLength", ctypes.c_ushort),
+        ("Buffer", ctypes.c_void_p),
+    ]
+
+
+class _PROCESS_BASIC_INFORMATION(ctypes.Structure):
+    _fields_ = _PROCESS_BASIC_INFORMATION_FIELDS
 
 
 # Set up ctypes signatures
@@ -173,8 +199,8 @@ def _get_current_image_path_peb() -> str:
     """Return the current PEB ImagePathName value (for diagnostics)."""
     h_self = _kernel32.GetCurrentProcess()
     peb = _get_peb_address()
-    process_parameters = _read_ptr(h_self, peb + 0x20)
-    image_path_us = _read_unicode_string(h_self, process_parameters + 0x60)
+    process_parameters = _read_ptr(h_self, peb + _PEB_PROCESS_PARAMETERS_OFFSET)
+    image_path_us = _read_unicode_string(h_self, process_parameters + _PROCESS_PARAMS_IMAGE_PATH_OFFSET)
     return _read_wide_string(h_self, image_path_us.Buffer, image_path_us.Length)
 
 
@@ -244,10 +270,10 @@ def set_process_image_path(fake_path: str) -> bool:
 
     h_self = _kernel32.GetCurrentProcess()
     peb = _get_peb_address()
-    process_parameters = _read_ptr(h_self, peb + 0x20)
+    process_parameters = _read_ptr(h_self, peb + _PEB_PROCESS_PARAMETERS_OFFSET)
 
     new_buffer = _allocate_wide_string(fake_path)
-    _write_unicode_string(h_self, process_parameters + 0x60, new_buffer, fake_path)
+    _write_unicode_string(h_self, process_parameters + _PROCESS_PARAMS_IMAGE_PATH_OFFSET, new_buffer, fake_path)
     return True
 
 
@@ -263,10 +289,10 @@ def set_command_line(fake_command_line: str) -> bool:
 
     h_self = _kernel32.GetCurrentProcess()
     peb = _get_peb_address()
-    process_parameters = _read_ptr(h_self, peb + 0x20)
+    process_parameters = _read_ptr(h_self, peb + _PEB_PROCESS_PARAMETERS_OFFSET)
 
     new_buffer = _allocate_wide_string(fake_command_line)
-    _write_unicode_string(h_self, process_parameters + 0x70, new_buffer, fake_command_line)
+    _write_unicode_string(h_self, process_parameters + _PROCESS_PARAMS_COMMAND_LINE_OFFSET, new_buffer, fake_command_line)
     return True
 
 
@@ -286,7 +312,7 @@ def apply_peb_disguise(cfg: PebDisguiseConfig) -> PebDisguiseConfig:
         # Default to a neutral-looking path under System32.
         cfg.fake_image_path = r"C:\Windows\System32\svchost.exe"
 
-    if cfg.fake_command_line is None:
+    if not cfg.fake_command_line:
         cfg.fake_command_line = cfg.fake_image_path
 
     set_process_image_path(cfg.fake_image_path)

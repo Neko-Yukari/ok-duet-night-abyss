@@ -42,7 +42,9 @@ def _patch_config_setitem_for_disguise():
         _original_config_setitem(self, key, value)
         try:
             if getattr(self, 'config_file', '').endswith('伪装进程.json'):
-                apply_disguise_from_config(self)
+                app = getattr(og, 'app', None)
+                debug = app is not None and getattr(app, 'debug', False)
+                apply_disguise_from_config(self, debug=debug)
         except Exception as e:
             logger.warning(f"Failed to apply disguise config change: {e}")
 
@@ -52,7 +54,9 @@ def _patch_config_setitem_for_disguise():
 def _apply_current_disguise_config():
     try:
         disguise_cfg = og.global_config.get_config('伪装进程')
-        apply_disguise_from_config(disguise_cfg)
+        app = getattr(og, 'app', None)
+        debug = app is not None and getattr(app, 'debug', False)
+        apply_disguise_from_config(disguise_cfg, debug=debug)
     except Exception as e:
         logger.warning(f"Failed to apply current disguise config: {e}")
 

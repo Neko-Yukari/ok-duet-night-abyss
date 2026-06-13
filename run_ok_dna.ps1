@@ -47,4 +47,4 @@ if (Test-Path -LiteralPath $pythonw -PathType Leaf) {
 }
 
 # pythonw.exe does not block and has no console; we start it detached.
-Start-Process -FilePath $exe -ArgumentList "$mainPy" -WorkingDirectory $projectRoot -WindowStyle Hidden
+Start-Process -FilePath $exe -ArgumentList @($mainPy) -WorkingDirectory $projectRoot -WindowStyle Hidden
