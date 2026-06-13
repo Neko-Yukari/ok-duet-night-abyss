@@ -4,7 +4,10 @@ import concurrent.futures
 from qfluentwidgets import DoubleSpinBox
 from PySide6.QtWidgets import QApplication
 from ok import Logger, og
+from ok.util.config import Config
 from threading import Event
+
+from src.disguise import apply_disguise_from_config
 
 logger = Logger.get_logger(__name__)
 
@@ -19,6 +22,39 @@ def _new_init(self, *args, **kwargs):
 
 
 DoubleSpinBox.__init__ = _new_init
+
+
+# --- 伪装配置实时生效钩子 ---
+# ok-script 的 Config 在 __setitem__ 时持久化到文件，但没有发布变化事件。
+# 这里补丁 __setitem__，当“伪装进程”配置的任意字段被修改时立即重新应用 disguise。
+_config_setitem_patched = False
+
+
+def _patch_config_setitem_for_disguise():
+    global _config_setitem_patched
+    if _config_setitem_patched:
+        return
+    _config_setitem_patched = True
+
+    _original_config_setitem = Config.__setitem__
+
+    def _patched_config_setitem(self, key, value):
+        _original_config_setitem(self, key, value)
+        try:
+            if getattr(self, 'config_file', '').endswith('伪装进程.json'):
+                apply_disguise_from_config(self)
+        except Exception as e:
+            logger.warning(f"Failed to apply disguise config change: {e}")
+
+    Config.__setitem__ = _patched_config_setitem
+
+
+def _apply_current_disguise_config():
+    try:
+        disguise_cfg = og.global_config.get_config('伪装进程')
+        apply_disguise_from_config(disguise_cfg)
+    except Exception as e:
+        logger.warning(f"Failed to apply current disguise config: {e}")
 
 
 # --- 猴子补丁 ---
@@ -38,6 +74,8 @@ class Globals(QObject):
         self.shared_frame = None
         exit_event.bind_stop(self)
         self.init_pynput()
+        _patch_config_setitem_for_disguise()
+        _apply_current_disguise_config()
 
     def stop(self):
         logger.info("pynput stop")

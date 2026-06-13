@@ -18,6 +18,7 @@ so this module focuses on the parts that can be safely disguised at runtime.
 from __future__ import annotations
 
 import ctypes
+import os
 import sys
 from dataclasses import dataclass
 from typing import Callable
@@ -164,6 +165,34 @@ def find_windows_by_title(title: str) -> list[int]:
     return matches
 
 
+def find_own_windows() -> list[int]:
+    """Return top-level HWNDs that belong to the current process."""
+    current_pid = os.getpid()
+    matches: list[int] = []
+
+    def _check(hwnd: int) -> None:
+        _, pid = get_window_thread_process_id(hwnd)
+        if pid == current_pid:
+            matches.append(hwnd)
+
+    enum_windows(_check)
+    return matches
+
+
+def set_own_window_title(title: str) -> bool:
+    """Set the title of the current process's first top-level window."""
+    if not title:
+        return False
+    hwnds = find_own_windows()
+    if not hwnds:
+        logger.debug("No top-level window found for the current process")
+        return False
+    for hwnd in hwnds:
+        set_window_text(hwnd, title)
+    logger.info(f"Set current process window title to: {title}")
+    return True
+
+
 def rename_own_gui_window(old_title: str, new_title: str) -> bool:
     """
     Rename a running GUI window from ``old_title`` to ``new_title``.
@@ -218,6 +247,42 @@ def apply_disguise(cfg: DisguiseConfig) -> DisguiseConfig:
         rename_own_gui_window(cfg.old_gui_title, cfg.gui_title)
 
     return cfg
+
+
+def apply_disguise_from_config(cfg: dict) -> DisguiseConfig:
+    """
+    Apply disguise settings directly from a raw configuration mapping.
+
+    This is used both at startup and when the user changes a disguise option
+    in the GUI so that the change takes effect immediately.
+    """
+    enabled = cfg.get("启用伪装", False)
+    gui_title = cfg.get("GUI窗口标题", "") if enabled else ""
+    console_title = cfg.get("控制台窗口标题", "") if enabled else ""
+
+    result = apply_disguise(DisguiseConfig(
+        enabled=enabled,
+        hide_console=cfg.get("隐藏控制台窗口", True) if enabled else False,
+        console_title=console_title,
+        gui_title=gui_title,
+        rename_existing_window=False,
+        old_gui_title="",
+    ))
+
+    if enabled and gui_title:
+        set_own_window_title(gui_title)
+
+    if enabled and cfg.get("修改PEB映像路径", False):
+        from src.disguise_peb import apply_peb_disguise, PebDisguiseConfig
+        fake_path = cfg.get("PEB伪装的映像路径", r"C:\Windows\System32\svchost.exe")
+        fake_cmd = cfg.get("PEB伪装的命令行", "") or fake_path
+        apply_peb_disguise(PebDisguiseConfig(
+            enabled=True,
+            fake_image_path=fake_path,
+            fake_command_line=fake_cmd,
+        ))
+
+    return result
 
 
 def main() -> int:
