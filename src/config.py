@@ -55,11 +55,17 @@ disguise_config_option = ConfigOption('伪装进程', {
     '隐藏控制台窗口': True,
     '控制台窗口标题': '',
     'GUI窗口标题': '',
+    '修改PEB映像路径': False,
+    'PEB伪装的映像路径': r'C:\Windows\System32\svchost.exe',
+    'PEB伪装的命令行': '',
 }, description='隐藏或伪装本工具在系统中的显示', config_description={
     '启用伪装': '开启后工具会尝试隐藏控制台并修改窗口标题',
     '隐藏控制台窗口': '启动时隐藏命令行/终端窗口',
     '控制台窗口标题': '留空则保持不变，设置后控制台窗口会显示为该标题',
     'GUI窗口标题': '留空则保持默认，设置后主程序窗口会显示为该标题',
+    '修改PEB映像路径': '实验性：修改当前进程PEB中的映像路径（仅影响用户态工具，Task Manager 详细信息可能仍显示原名）',
+    'PEB伪装的映像路径': 'PEB映像路径伪装成的路径，例如 C:\\Windows\\System32\\notepad.exe',
+    'PEB伪装的命令行': '留空则使用上面的路径，用于伪装命令行参数',
 })
 
 def make_bottom_right_black(frame): #可选. 某些游戏截图时遮挡UID使用

@@ -1,6 +1,7 @@
 import ok
 from src.config import config, disguise_config_option
 from src.disguise import DisguiseConfig, apply_disguise
+from src.disguise_peb import PebDisguiseConfig, apply_peb_disguise
 
 if __name__ == '__main__':
     config = config
@@ -25,6 +26,15 @@ if __name__ == '__main__':
             rename_existing_window=False,
             old_gui_title='ok-dna',
         ))
+
+        if disguise_defaults.get('修改PEB映像路径', False):
+            fake_path = disguise_defaults.get('PEB伪装的映像路径', r'C:\Windows\System32\svchost.exe')
+            fake_cmd = disguise_defaults.get('PEB伪装的命令行', '') or fake_path
+            apply_peb_disguise(PebDisguiseConfig(
+                enabled=True,
+                fake_image_path=fake_path,
+                fake_command_line=fake_cmd,
+            ))
 
     ok = ok.OK(config)
     ok.start()
