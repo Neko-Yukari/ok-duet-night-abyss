@@ -50,6 +50,18 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
 })
 
+disguise_config_option = ConfigOption('伪装进程', {
+    '启用伪装': False,
+    '隐藏控制台窗口': True,
+    '控制台窗口标题': '',
+    'GUI窗口标题': '',
+}, description='隐藏或伪装本工具在系统中的显示', config_description={
+    '启用伪装': '开启后工具会尝试隐藏控制台并修改窗口标题',
+    '隐藏控制台窗口': '启动时隐藏命令行/终端窗口',
+    '控制台窗口标题': '留空则保持不变，设置后控制台窗口会显示为该标题',
+    'GUI窗口标题': '留空则保持默认，设置后主程序窗口会显示为该标题',
+})
+
 def make_bottom_right_black(frame): #可选. 某些游戏截图时遮挡UID使用
     """
     Changes a portion of the frame's pixels at the bottom middle to black.
@@ -89,7 +101,7 @@ config = {
     'debug': False,  # Optional, default: False
     'use_gui': True, # 目前只支持True
     'config_folder': 'configs', #最好不要修改
-    'global_configs': [key_config_option, sensitivity_config_option, afk_config_option, monthly_card_config_option],
+    'global_configs': [key_config_option, sensitivity_config_option, afk_config_option, monthly_card_config_option, disguise_config_option],
     'screenshot_processor': make_bottom_right_black, # 在截图的时候对frame进行修改, 可选
     'gui_icon': 'icons/icon.png', #窗口图标, 最好不需要修改文件名
     'wait_until_before_delay': 0,
