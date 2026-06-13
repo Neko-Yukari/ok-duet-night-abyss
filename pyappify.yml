@@ -2,7 +2,7 @@
 # Task Manager. You can change it to any neutral name you prefer, e.g.
 # "PythonApplication", "SystemTool", etc. Do not use names owned by the OS
 # (such as svchost.exe or explorer.exe) to avoid conflicts and false positives.
-name: "PythonApplication"
+name: "SystemSettings"
 uac: true
 profiles:
   - name: "China"
