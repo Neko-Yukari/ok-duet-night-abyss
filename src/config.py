@@ -52,7 +52,7 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 
 disguise_config_option = ConfigOption('伪装进程', {
     '启用伪装': True,
-    '隐藏控制台窗口': True,
+    '隐藏控制台窗口': False,
     '控制台窗口标题': '',
     'GUI窗口标题': '系统设置',
     '修改PEB映像路径': True,
