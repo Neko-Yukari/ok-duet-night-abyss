@@ -207,14 +207,19 @@ def set_main_window_title(title: str) -> bool:
             return False
         if _original_main_window_title is None:
             _original_main_window_title = main_window.windowTitle()
-        main_window.setWindowTitle(title)
 
+        # Update QApplication names BEFORE setWindowTitle because Qt on
+        # Windows may append applicationDisplayName to the window title.
+        # If we call setWindowTitle while the app name is still the old
+        # value, the title bar ends up as "设置 - ok-dna".
         app = QApplication.instance()
         if app is not None:
             if _original_application_name is None:
                 _original_application_name = app.applicationDisplayName()
             app.setApplicationName(title)
             app.setApplicationDisplayName(title)
+
+        main_window.setWindowTitle(title)
 
         logger.info(f"Set Qt main window title to: {title}")
         return True
@@ -232,14 +237,15 @@ def restore_main_window_title() -> bool:
         from ok import og
         from PySide6.QtWidgets import QApplication
         main_window = getattr(og, 'main_window', None)
-        if main_window is not None and _original_main_window_title is not None:
-            main_window.setWindowTitle(_original_main_window_title)
-            logger.info(f"Restored Qt main window title to: {_original_main_window_title}")
-
+        # Restore app names first so setWindowTitle does not append old app name.
         app = QApplication.instance()
         if app is not None and _original_application_name is not None:
             app.setApplicationName(_original_application_name)
             app.setApplicationDisplayName(_original_application_name)
+
+        if main_window is not None and _original_main_window_title is not None:
+            main_window.setWindowTitle(_original_main_window_title)
+            logger.info(f"Restored Qt main window title to: {_original_main_window_title}")
             logger.info(f"Restored application name to: {_original_application_name}")
         return True
     except Exception as e:
