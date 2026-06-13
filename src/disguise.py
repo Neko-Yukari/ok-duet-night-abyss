@@ -285,6 +285,18 @@ def apply_disguise_from_config(cfg: dict) -> DisguiseConfig:
     return result
 
 
+def load_disguise_config(defaults: dict | None = None) -> dict:
+    """Load the saved '伪装进程' config, falling back to ``defaults``."""
+    from ok.util.config import Config
+    defaults = defaults or {}
+    try:
+        cfg = Config('伪装进程', defaults)
+        return dict(cfg)
+    except Exception as e:
+        logger.warning(f"Failed to load saved disguise config: {e}")
+        return dict(defaults)
+
+
 def main() -> int:
     """Small CLI smoke-test for the disguise helpers."""
     cfg = DisguiseConfig(
