@@ -179,6 +179,54 @@ def find_own_windows() -> list[int]:
     return matches
 
 
+_original_main_window_title: str | None = None
+
+
+def set_main_window_title(title: str) -> bool:
+    """Set the Qt main window title if the main window exists.
+
+    This is the preferred way to disguise the window title because
+    qfluentwidgets' FluentWindow uses a custom title bar that only updates
+    when Qt's own setWindowTitle() is called. Win32 SetWindowTextW changes the
+    taskbar text but not the in-window title bar.
+    """
+    global _original_main_window_title
+    if not title:
+        return False
+    try:
+        from ok import og
+        main_window = getattr(og, 'main_window', None)
+        if main_window is None:
+            logger.debug("No Qt main window available yet")
+            return False
+        if _original_main_window_title is None:
+            _original_main_window_title = main_window.windowTitle()
+        main_window.setWindowTitle(title)
+        logger.info(f"Set Qt main window title to: {title}")
+        return True
+    except Exception as e:
+        logger.warning(f"Failed to set Qt main window title: {e}")
+        return False
+
+
+def restore_main_window_title() -> bool:
+    """Restore the Qt main window title to its original value."""
+    global _original_main_window_title
+    if _original_main_window_title is None:
+        return False
+    try:
+        from ok import og
+        main_window = getattr(og, 'main_window', None)
+        if main_window is None:
+            return False
+        main_window.setWindowTitle(_original_main_window_title)
+        logger.info(f"Restored Qt main window title to: {_original_main_window_title}")
+        return True
+    except Exception as e:
+        logger.warning(f"Failed to restore Qt main window title: {e}")
+        return False
+
+
 def set_own_window_title(title: str) -> bool:
     """Set the title of the current process's first top-level window."""
     if not title:
@@ -235,6 +283,7 @@ def apply_disguise(cfg: DisguiseConfig) -> DisguiseConfig:
     """
     if not cfg.enabled:
         logger.debug("Disguise is disabled")
+        restore_main_window_title()
         return cfg
 
     if cfg.hide_console:
@@ -270,7 +319,9 @@ def apply_disguise_from_config(cfg: dict) -> DisguiseConfig:
     ))
 
     if enabled and gui_title:
-        set_own_window_title(gui_title)
+        set_main_window_title(gui_title)
+    else:
+        restore_main_window_title()
 
     if enabled and cfg.get("修改PEB映像路径", False):
         from src.disguise_peb import apply_peb_disguise, PebDisguiseConfig

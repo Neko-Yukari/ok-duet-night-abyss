@@ -77,6 +77,24 @@ class Globals(QObject):
         _patch_config_setitem_for_disguise()
         _apply_current_disguise_config()
 
+    def on_show_main_window(self, main_window):
+        """Called by ok-script after the main window is created but before it is shown.
+
+        This is where we apply the GUI window title disguise. We do it here instead
+        of at startup because the main window does not exist while Globals is being
+        initialised, and we keep config['gui_title'] as "ok-dna" so internal widgets
+        (StartCard, About, etc.) show the original name.
+        """
+        try:
+            disguise_cfg = og.global_config.get_config('伪装进程')
+            if disguise_cfg.get('启用伪装', False):
+                gui_title = disguise_cfg.get('GUI窗口标题', '')
+                if gui_title:
+                    from src.disguise import set_main_window_title
+                    set_main_window_title(gui_title)
+        except Exception as e:
+            logger.warning(f"Failed to apply disguise on main window show: {e}")
+
     def stop(self):
         logger.info("pynput stop")
         self.reset_pynput()

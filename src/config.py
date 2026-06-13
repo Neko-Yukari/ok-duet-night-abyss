@@ -171,7 +171,7 @@ config = {
         </p>
     """,
     'screenshots_folder': "screenshots", #截图存放目录, 每次重新启动会清空目录
-    'gui_title': '系统设置',  # Optional
+    'gui_title': 'ok-dna',  # 应用内部名称（StartCard、关于页等），保持原始名称不被伪装
     'template_matching': {
         'coco_feature_json': os.path.join('assets', 'coco_annotations.json'), #coco格式标记, 需要png图片, 在debug模式运行后, 会对进行切图仅保留被标记部分以减少图片大小
         'default_horizontal_variance': 0.004, #默认x偏移, 查找不传box的时候, 会根据coco坐标, match偏移box内的
